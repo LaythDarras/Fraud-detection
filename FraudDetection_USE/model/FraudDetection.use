@@ -1,0 +1,184 @@
+-- ============================================================
+--  FraudDetection Profile - USE OCL Model
+--  Compatible with USE Tool 6.0.0
+-- ============================================================
+
+model FraudDetection
+
+-- ============================================================
+-- CLASSES
+-- ============================================================
+
+class Customer
+attributes
+  customerId     : String
+  name           : String
+  riskScore      : Real
+  historicalData : String
+operations
+  updateRiskScore()
+  getHistoricalBehavior() : String
+end
+
+class Transaction
+attributes
+  txId         : String
+  amount       : Real
+  timestamp    : String
+  location     : String
+  category     : String
+  isSuspicious : Boolean
+  fraudScore   : Real
+operations
+  validateAmount() : Boolean
+end
+
+class Preprocessing
+attributes
+  normalization : Boolean
+  features      : String
+operations
+  cleanData()
+  normalize()
+  extractFeatures()
+end
+
+class FraudModel
+attributes
+  modelId   : String
+  accuracy  : Real
+  threshold : Real
+operations
+  predict(t : Transaction) : Real
+  updateThreshold(newThreshold : Real)
+end
+
+class SupervisedModel < FraudModel
+attributes
+  algorithm   : String
+  trainingSet : String
+operations
+  train(dataSet : String)
+  evaluate() : Real
+end
+
+class UnsupervisedModel < FraudModel
+attributes
+  contamination    : Real
+  anomalyThreshold : Real
+operations
+  fit(dataFrame : String)
+  predictAnomaly() : Boolean
+end
+
+class OnlineLearning < FraudModel
+attributes
+  batchSize       : Integer
+  updateFrequency : Integer
+end
+
+class QualityOfService
+attributes
+  precision : Real
+  recall    : Real
+  f1Score   : Real
+  latency   : Real
+operations
+  computeMetrics()
+end
+
+class Alert
+attributes
+  alertId    : String
+  confidence : Real
+  status     : String
+operations
+  sendNotification()
+  updateStatus(newStatus : String)
+end
+
+-- ============================================================
+-- ASSOCIATIONS
+-- ============================================================
+
+association CustomerTransaction between
+  Customer     [1]    role customer
+  Transaction  [0..*] role transactions
+end
+
+association TransactionPreprocessing between
+  Transaction   [1]    role transaction
+  Preprocessing [0..*] role preprocessings
+end
+
+association FraudModelAlert between
+  FraudModel [1]    role fraudModel
+  Alert      [0..*] role alerts
+end
+
+association AlertQoS between
+  Alert            [0..*] role alerts
+  QualityOfService [1]    role qualityOfService
+end
+
+-- ============================================================
+-- OCL CONSTRAINTS
+-- ============================================================
+
+constraints
+
+context Customer
+  inv ValidRiskScore:
+    self.riskScore >= 0.0 and self.riskScore <= 1.0
+
+context Transaction
+  inv PositiveAmount:
+    self.amount > 0.0
+
+  inv ValidFraudScore:
+    self.fraudScore >= 0.0 and self.fraudScore <= 1.0
+
+context Preprocessing
+  inv FeaturesNotEmpty:
+    self.features <> ''
+
+context FraudModel
+  inv ValidThreshold:
+    self.threshold >= 0.0 and self.threshold <= 1.0
+
+  inv ValidAccuracy:
+    self.accuracy >= 0.0 and self.accuracy <= 1.0
+
+context SupervisedModel
+  inv MinimumAccuracy:
+    self.accuracy >= 0.85
+
+  inv AlgorithmDefined:
+    self.algorithm <> ''
+
+context UnsupervisedModel
+  inv ValidContamination:
+    self.contamination >= 0.0 and self.contamination <= 0.5
+
+  inv ValidAnomalyThreshold:
+    self.anomalyThreshold >= 0.0 and self.anomalyThreshold <= 1.0
+
+context QualityOfService
+  inv AcceptableLatency:
+    self.latency <= 100.0
+
+  inv ValidPrecision:
+    self.precision >= 0.0 and self.precision <= 1.0
+
+  inv ValidRecall:
+    self.recall >= 0.0 and self.recall <= 1.0
+
+context Alert
+  inv MinimumConfidence:
+    self.confidence >= 0.5
+
+  inv AlertIdNotEmpty:
+    self.alertId <> ''
+
+  inv ValidConfidence:
+    self.confidence >= 0.0 and self.confidence <= 1.0

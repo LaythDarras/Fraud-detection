@@ -1,0 +1,97 @@
+-- ============================================================
+--  FraudDetection - SOIL Instance Script
+-- ============================================================
+
+-- Customers
+!create c1 : Customer
+!set c1.customerId   := 'CUST-001'
+!set c1.name         := 'Alice Martin'
+!set c1.riskScore    := 0.25
+!set c1.historicalData := 'Low risk profile'
+
+!create c2 : Customer
+!set c2.customerId   := 'CUST-002'
+!set c2.name         := 'Bob Dubois'
+!set c2.riskScore    := 0.87
+!set c2.historicalData := 'High risk profile'
+
+-- Transactions
+!create t1 : Transaction
+!set t1.txId         := 'TX-0001'
+!set t1.amount       := 150.0
+!set t1.timestamp    := '2025-04-26T10:30:00'
+!set t1.location     := 'Tunis, TN'
+!set t1.category     := 'PURCHASE'
+!set t1.isSuspicious := false
+!set t1.fraudScore   := 0.12
+
+!create t2 : Transaction
+!set t2.txId         := 'TX-0002'
+!set t2.amount       := 9800.0
+!set t2.timestamp    := '2025-04-26T02:15:00'
+!set t2.location     := 'Unknown'
+!set t2.category     := 'TRANSFER'
+!set t2.isSuspicious := true
+!set t2.fraudScore   := 0.93
+
+-- Preprocessing
+!create p1 : Preprocessing
+!set p1.normalization := true
+!set p1.features      := 'amount,location,hour,category,riskScore'
+
+!create p2 : Preprocessing
+!set p2.normalization := true
+!set p2.features      := 'amount,velocity,geolocation'
+
+-- SupervisedModel
+!create sm1 : SupervisedModel
+!set sm1.modelId     := 'MODEL-RF-001'
+!set sm1.accuracy    := 0.94
+!set sm1.threshold   := 0.75
+!set sm1.algorithm   := 'RandomForest'
+!set sm1.trainingSet := 'dataset_2024_Q4.csv'
+
+-- UnsupervisedModel
+!create um1 : UnsupervisedModel
+!set um1.modelId          := 'MODEL-ISO-001'
+!set um1.accuracy         := 0.88
+!set um1.threshold        := 0.60
+!set um1.contamination    := 0.05
+!set um1.anomalyThreshold := 0.70
+
+-- OnlineLearning
+!create ol1 : OnlineLearning
+!set ol1.modelId         := 'MODEL-OL-001'
+!set ol1.accuracy        := 0.91
+!set ol1.threshold       := 0.80
+!set ol1.batchSize       := 64
+!set ol1.updateFrequency := 100
+
+-- Alerts
+!create a1 : Alert
+!set a1.alertId    := 'ALERT-001'
+!set a1.confidence := 0.93
+!set a1.status     := 'OPEN'
+
+!create a2 : Alert
+!set a2.alertId    := 'ALERT-002'
+!set a2.confidence := 0.76
+!set a2.status     := 'PENDING'
+
+-- QualityOfService
+!create qos1 : QualityOfService
+!set qos1.precision := 0.91
+!set qos1.recall    := 0.88
+!set qos1.f1Score   := 0.894
+!set qos1.latency   := 42.0
+
+-- Associations
+!insert (c1, t1) into CustomerTransaction
+!insert (c2, t2) into CustomerTransaction
+!insert (t1, p1) into TransactionPreprocessing
+!insert (t2, p1) into TransactionPreprocessing
+!insert (t2, p2) into TransactionPreprocessing
+!insert (sm1, a1) into FraudModelAlert
+!insert (sm1, a2) into FraudModelAlert
+!insert (a1, qos1) into AlertQoS
+!insert (a2, qos1) into AlertQoS
