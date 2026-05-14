@@ -77,6 +77,6 @@ Fraud-detection/
 │   ├── instances.soil
 │   └── validation scripts
 │
-├── profileUml.mdj
+├── FraudUml.mdj
 │
 └── README.md
